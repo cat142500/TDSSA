@@ -50,6 +50,7 @@ public class Attacker {
 			// label the task honestly if the task is observed for more than K times
 			if(count==K+1) {
 				Random rand = new Random();
+				// assume the attacker has 0.8 probability to provide the true label once a golden task is identified
 				if(rand.nextDouble()<=0.8) {
 					setTaskLabel(task, task.getTrueLabel());
 				}

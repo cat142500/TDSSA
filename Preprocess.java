@@ -275,100 +275,100 @@ public class Preprocess {
 			}
 			w1.close();
 			
+			BufferedWriter w2 = new BufferedWriter(new FileWriter(dataset+"\\golden.txt"));
+			w2.write(golden_num+"\n");
+			if(has_golden) {
+				// write the true label of each golden task
+				for(Integer golden : golden_truth.keySet()) {
+					w2.write(golden.intValue()+"\t"+golden_truth.get(golden).intValue()+"\t");
+				}
+				w2.write("\n");
+				// write the label of each worker on each golden task
+				for(Integer worker : worker_golden_labels.keySet()) {
+					w2.write(worker.intValue()+"\t");
+					Map<Integer, Integer> golden_labels = worker_golden_labels.get(worker);
+					for(Integer golden : golden_labels.keySet()) {
+						w2.write(golden.intValue()+"\t"+golden_labels.get(golden).intValue()+"\t");
+					}
+					w2.write("\n");
+				}
+			}
+			else {
+				// generate golden tasks
+				int[] golden_labels = new int[golden_num];
+				for(int i=0; i<golden_num; i++) {
+					golden_labels[i] = rand.nextInt(L);
+					w2.write((-1-i)+"\t"+golden_labels[i]+"\t");
+				}
+				w2.write("\n");
+				// determine the label provided by each worker on golden tasks
+				for(Integer worker : worker_normal_labels.keySet()) {
+					w2.write(worker.intValue()+"\t");
+					// compute the worker's accuracy
+					double acc = 0.0;
+					Map<Integer, Integer> task_labels = worker_normal_labels.get(worker);				
+					for(Integer task : task_labels.keySet()) {
+						if(normal_truth.get(task).intValue()==task_labels.get(task).intValue()) {
+							acc += 1;
+						}
+					}
+					acc = acc/task_labels.size();
+					
+					// generate the worker's label on each golden task based on the computed accuracy
+					for(int i=0; i<golden_num; i++) {
+						w2.write(-1-i+"\t");
+						if(rand.nextDouble()<=acc) {
+							w2.write(golden_labels[i]+"\t");
+						}
+						else {
+							int answer = rand.nextInt(L);
+							while(answer==golden_labels[i]) {
+								answer = rand.nextInt(L);
+							}
+							w2.write(answer+"\t");
+						}
+					}
+					w2.write("\n");
+				}
+			}
+			w2.close();
+			
 			for(int run=0; run<run_num; run++) {
 				File f = new File(dataset+"/"+run);
 				f.mkdir();
 				replace();
 				
 				// attack.txt contains the labels randomized by each attacker and the Sybil workers controlled by each attacker
-				BufferedWriter w2 = new BufferedWriter(new FileWriter(dataset+"\\"+run+"\\attack.txt"));
-				w2.write(mu+"\t"+epsilon+"\t"+lambda+"\n");
+				BufferedWriter w3 = new BufferedWriter(new FileWriter(dataset+"\\"+run+"\\attack.txt"));
+				w3.write(mu+"\t"+epsilon+"\t"+lambda+"\n");
 				for(int i=0; i<lambda; i++) {
 					// write attacker ID and total number of tasks for each attacker
-					w2.write(i+"\t"+(normal_truth.size()+golden_num)+"\t");
+					w3.write(i+"\t"+(normal_truth.size()+golden_num)+"\t");
 					// write task ID and randomized label for normal tasks
 					for(Integer task : normal_truth.keySet()) {
-						w2.write(task.intValue()+"\t"+rand.nextInt(L)+"\t");
+						w3.write(task.intValue()+"\t"+rand.nextInt(L)+"\t");
 					}
 					// write task ID and randomized label for golden tasks
 					if(has_golden) {
 						for(Integer golden : golden_truth.keySet()) {
-							w2.write(golden.intValue()+"\t"+rand.nextInt(L)+"\t");
+							w3.write(golden.intValue()+"\t"+rand.nextInt(L)+"\t");
 						}
-						w2.write("\n");
+						w3.write("\n");
 					}
 					else {
 						for(int j=-1; j>=0-golden_num; j--) {
-							w2.write(j+"\t"+rand.nextInt(L)+"\t");
+							w3.write(j+"\t"+rand.nextInt(L)+"\t");
 						}
-						w2.write("\n");
+						w3.write("\n");
 					}
 					ArrayList<Integer> workers = attacker_sybils.get(i);
 					// write attacker ID and number of Sybil workers for each attacker
-					w2.write(i+"\t"+workers.size()+"\t");
+					w3.write(i+"\t"+workers.size()+"\t");
 					// write worker ID of replaced independent workers
 					for(Integer worker : workers) {
-						w2.write(worker.intValue()+"\t");
-					}
-					w2.write("\n");
-				}
-				w2.close();
-				
-				BufferedWriter w3 = new BufferedWriter(new FileWriter(dataset+"\\"+run+"\\golden.txt"));
-				w3.write(golden_num+"\n");
-				if(has_golden) {
-					// write the true label of each golden task
-					for(Integer golden : golden_truth.keySet()) {
-						w3.write(golden.intValue()+"\t"+golden_truth.get(golden).intValue()+"\t");
+						w3.write(worker.intValue()+"\t");
 					}
 					w3.write("\n");
-					// write the label of each worker on each golden task
-					for(Integer worker : worker_golden_labels.keySet()) {
-						w3.write(worker.intValue()+"\t");
-						Map<Integer, Integer> golden_labels = worker_golden_labels.get(worker);
-						for(Integer golden : golden_labels.keySet()) {
-							w3.write(golden.intValue()+"\t"+golden_labels.get(golden).intValue()+"\t");
-						}
-						w3.write("\n");
-					}
-				}
-				else {
-					// generate golden tasks
-					int[] golden_labels = new int[golden_num];
-					for(int i=0; i<golden_num; i++) {
-						golden_labels[i] = rand.nextInt(L);
-						w3.write((-1-i)+"\t"+golden_labels[i]+"\t");
-					}
-					w3.write("\n");
-					// determine the label provided by each worker on golden tasks
-					for(Integer worker : worker_normal_labels.keySet()) {
-						w3.write(worker.intValue()+"\t");
-						// compute the worker's accuracy
-						double acc = 0.0;
-						Map<Integer, Integer> task_labels = worker_normal_labels.get(worker);				
-						for(Integer task : task_labels.keySet()) {
-							if(normal_truth.get(task).intValue()==task_labels.get(task).intValue()) {
-								acc += 1;
-							}
-						}
-						acc = acc/task_labels.size();
-						
-						// generate the worker's label on each golden task based on the computed accuracy
-						for(int i=0; i<golden_num; i++) {
-							w3.write(-1-i+"\t");
-							if(rand.nextDouble()<=acc) {
-								w3.write(golden_labels[i]+"\t");
-							}
-							else {
-								int answer = rand.nextInt(L);
-								while(answer==golden_labels[i]) {
-									answer = rand.nextInt(L);
-								}
-								w3.write(answer+"\t");
-							}
-						}
-						w3.write("\n");
-					}
 				}
 				w3.close();
 				

@@ -93,11 +93,10 @@ public class TDSSA {
 		}
 	}
 	
-	/* read worker labels on golden tasks for the rth run */
-	public void readGolden(String dataset, int r) {
+	/* read worker labels on golden tasks */
+	public void readGolden(String dataset) {
 		try {
-			id_to_golden = new HashMap<Integer, Task>();
-			BufferedReader reader = new BufferedReader(new FileReader(dataset+"//"+r+"//golden.txt"));
+			BufferedReader reader = new BufferedReader(new FileReader(dataset+"//golden.txt"));
 			String line = reader.readLine();
 			int golden_num = Integer.parseInt(line);
 			line = reader.readLine();
@@ -384,7 +383,7 @@ public class TDSSA {
 			TDSSA tdssa = new TDSSA(B, alpha, tau, delta);
 			tdssa.readNormal(dataset);
 			for(int r=0; r<run_num; r++) {
-				tdssa.readGolden(dataset, r);
+				tdssa.readGolden(dataset);
 				tdssa.readAttack(dataset, r);
 				tdssa.readOrder(dataset, r);
 				tdssa.run();
