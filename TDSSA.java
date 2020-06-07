@@ -364,17 +364,35 @@ public class TDSSA {
 	
 	/* main function */
 	public static void main(String[] args) {
+		if(args.length!=9 && args.length!=14) {
+			System.out.println("Invalid number of parameters!");
+			System.exit(0);
+		}
+		
 		String dataset = args[0];
 		int run_num = Integer.parseInt(args[1]);
 		int B =  Integer.parseInt(args[2]);
 		double alpha = Double.parseDouble(args[3]);
 		double tau = Double.parseDouble(args[4]);
 		double delta = Double.parseDouble(args[5]);
-				
-		double ave_a_accuracy = 0.0; // average aggregation accuracy
-		double ave_e_number = 0.0; // average number of golden tasks for testing each worker
-		double ave_t_cost = 0.0; // average number of exposed golden tasks
-		long ave_running_time = 0; // average running time
+		double mu = Double.parseDouble(args[6]);
+		double epsilon = Double.parseDouble(args[7]);
+		int lambda = Integer.parseInt(args[8]);
+		
+		if(args.length==9) {
+			Preprocess pre = new Preprocess(dataset, run_num, mu, epsilon, lambda);
+			pre.formalize();
+		}
+		else {
+			int N = Integer.parseInt(args[9]);
+			int M = Integer.parseInt(args[10]);
+			int L = Integer.parseInt(args[11]);
+			int K = Integer.parseInt(args[12]);
+			double theta = Double.parseDouble(args[13]);
+			
+			Preprocess pre = new Preprocess(dataset, run_num, mu, epsilon, lambda, N, M, L, K, theta);
+			pre.formalize();
+		}
 		
 		try {
 			BufferedWriter w1 = new BufferedWriter(new FileWriter(dataset+"//result.txt"));
@@ -382,28 +400,64 @@ public class TDSSA {
 			w1.write(dataset+"\n");
 			TDSSA tdssa = new TDSSA(B, alpha, tau, delta);
 			tdssa.readNormal(dataset);
+			
+			double[] accuracy = new double[run_num]; // record aggregation accuracy in each run
+			double[] exposed = new double[run_num]; // record number of exposed golden tasks in each run
+			double[] cost = new double[run_num]; // record number of golden tasks for testing each worker in each run
+			long[] time = new long[run_num]; // record running time in each run
+			
+			double ave_a_accuracy = 0.0; // average aggregation accuracy
+			double ave_e_number = 0.0; // average number of exposed golden tasks
+			double ave_t_cost = 0.0; // average number of golden tasks for testing each worker
+			long ave_running_time = 0; // average running time
+			
 			for(int r=0; r<run_num; r++) {
 				tdssa.readGolden(dataset);
 				tdssa.readAttack(dataset, r);
 				tdssa.readOrder(dataset, r);
 				tdssa.run();
-				double a_accuracy = tdssa.getAAccuracy();
-				double e_number = tdssa.getENumber();
-				double t_cost = tdssa.getTCost();
-				long running_time = tdssa.getRunningTime();
-				System.out.println("Run "+(r+1)+" --- A-Accuracy:"+a_accuracy+"  E-Number:"+e_number+"  T-Cost:"+t_cost+"  Time:"+running_time+"ms");
-				w1.write("Run "+(r+1)+" --- A-Accuracy:"+a_accuracy+"  E-Number:"+e_number+"  T-Cost:"+t_cost+"  Time:"+running_time+"ms\n");
-				ave_a_accuracy += a_accuracy;
-				ave_e_number += e_number;
-				ave_t_cost += t_cost;
-				ave_running_time += running_time;
+				accuracy[r] = tdssa.getAAccuracy();
+				exposed[r] = tdssa.getENumber();
+				cost[r] = tdssa.getTCost();
+				time[r] = tdssa.getRunningTime();
+				ave_a_accuracy += tdssa.getAAccuracy();
+				ave_e_number += tdssa.getENumber();
+				ave_t_cost += tdssa.getTCost();
+				ave_running_time += tdssa.getRunningTime();
+				System.out.println("Run "+(r+1)+" --- A-Accuracy:"+accuracy[r]+"  E-Number:"+exposed[r]+"  T-Cost:"+cost[r]+"  Time:"+time[r]+"ms");
+				w1.write("Run "+(r+1)+" --- A-Accuracy:"+accuracy[r]+"  E-Number:"+exposed[r]+"  T-Cost:"+cost[r]+"  Time:"+time[r]+"ms\n");
 			}
 			ave_a_accuracy /= run_num;
 			ave_e_number /= run_num;
 			ave_t_cost /= run_num;
-			ave_running_time /= run_num; 
-			System.out.println("\nAverage --- A-Accuracy:"+ave_a_accuracy+"  E-Number:"+ave_e_number+"  T-cost:"+ave_t_cost+"  Time:"+ave_running_time+"ms");
-			w1.write("\nAverage --- A-Accuracy:"+ave_a_accuracy+"  E-Number:"+ave_e_number+"  T-cost:"+ave_t_cost+"  Time:"+ave_running_time+"ms");
+			ave_running_time /= run_num;
+			
+			double std_a_accuracy = 0.0; // standard error of A-Accuracy
+			double std_e_number = 0.0; // standard error of E-Number
+			double std_t_cost = 0.0; // standard error of T-Cost
+			long std_running_time = 0; // standard error of Time
+			
+			for(int r=0; r<run_num; r++) {
+				std_a_accuracy += Math.pow(ave_a_accuracy - accuracy[r], 2);
+				std_e_number += Math.pow(ave_e_number - exposed[r], 2);
+				std_t_cost += Math.pow(ave_t_cost - cost[r], 2);
+				std_running_time += Math.pow(ave_running_time - time[r], 2);
+			}
+			std_a_accuracy = Math.sqrt(std_a_accuracy/(run_num-1))/Math.sqrt(run_num);
+			std_e_number = Math.sqrt(std_e_number/(run_num-1))/Math.sqrt(run_num);
+			std_t_cost = Math.sqrt(std_t_cost/(run_num-1))/Math.sqrt(run_num);
+			std_running_time = (long) (Math.sqrt(std_running_time/(run_num-1))/Math.sqrt(run_num));
+			
+			System.out.println("\nAverage: ");
+			System.out.println("A-Accuracy: "+ave_a_accuracy+"  Standard Eror: "+std_a_accuracy);
+			System.out.println("E-Number :"+ave_e_number+"  Standard Eror: "+std_e_number);
+			System.out.println("T-cost:"+ave_t_cost+"  Standard Eror: "+std_t_cost);
+			System.out.println("Time:"+ave_running_time+"ms  Standard Eror: "+std_running_time);
+			w1.write("\nAverage:\n");
+			w1.write("A-Accuracy: "+ave_a_accuracy+"  Standard Eror: "+std_a_accuracy+"\n");
+			w1.write("E-Number :"+ave_e_number+"  Standard Eror: "+std_e_number+"\n");
+			w1.write("T-cost:"+ave_t_cost+"  Standard Eror: "+std_t_cost+"\n");
+			w1.write("Time:"+ave_running_time+"ms  Standard Eror: "+std_running_time);
 			w1.close();
 		}  catch (Exception e) {
 			e.printStackTrace();

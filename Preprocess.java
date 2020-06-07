@@ -12,7 +12,7 @@ import java.util.Random;
 public class Preprocess {
 	private String dataset; // number of test runs
 	private int run_num; // number of test runs
-	private int golden_num; // number of golden tasks
+	private int golden_num = 20; // number of golden tasks (20 by default)
 	private double mu; // percentage of Sybil workers
 	private int lambda; // number of attackers
 	private double epsilon; // probability for Sybil workers to deviate from sharing 
@@ -21,7 +21,7 @@ public class Preprocess {
 	private int L; // optional label size
 	private int K; // number of workers per normal task
 	private double theta; // average worker accuracy
-	private boolean has_golden; // indicate whether golden tasks are provided
+	private boolean has_golden = false; // indicate whether golden tasks are provided
 	
 	private Map<Integer, Map<Integer, Integer>> worker_normal_labels = new HashMap<Integer, Map<Integer, Integer>>(); // (task, label) pairs of each worker on normal tasks
 	private Map<Integer, ArrayList<Integer>> normal_workers = new HashMap<Integer, ArrayList<Integer>>(); // workers on each normal task
@@ -31,38 +31,23 @@ public class Preprocess {
 	private Map<Integer, ArrayList<Integer>> attacker_sybils = new HashMap<Integer, ArrayList<Integer>>(); // Sybil workers of each attacker
 	private Map<String, Integer> worker_id = new HashMap<String, Integer>(); // worker to id mapping
 	
-	/* initialization for real datasets with golden tasks (NLP) */
+	/* initialization for real datasets (NLP and DOG) */
 	public Preprocess(String dataset, int run_num, double mu, double epsilon, int lambda) {
 		this.dataset = dataset;
 		this.run_num = run_num;
 		this.mu = mu;
 		this.epsilon = epsilon;
 		this.lambda = lambda;
-		has_golden = true;
-		readData();
-	}
-	
-	/* initialization for real datasets without golden tasks (DOG) */
-	public Preprocess(String dataset, int run_num, double mu, double epsilon, int lambda, int golden_num) {
-		this.dataset = dataset;
-		this.run_num = run_num;
-		this.mu = mu;
-		this.epsilon = epsilon;
-		this.lambda = lambda;
-		this.golden_num = golden_num;
-		has_golden = false;
 		readData();
 	}
 	
 	/* initialization for synthetic datasets (SYN) */
-	public Preprocess(String dataset, int run_num, double mu, double epsilon, int lambda, int golden_num, int N, int M, int L, int K, double theta) {
+	public Preprocess(String dataset, int run_num, double mu, double epsilon, int lambda, int N, int M, int L, int K, double theta) {
 		this.dataset = dataset;
 		this.run_num = run_num;
 		this.mu = mu;
 		this.epsilon = epsilon;
 		this.lambda = lambda;
-		this.golden_num = golden_num;
-		has_golden = false;
 		this.N = N;
 		this.M = M;
 		this.L = L;
@@ -141,6 +126,10 @@ public class Preprocess {
 			}
 			r2.close();
 			
+			File f1 = new File(dataset+"\\quali.csv");
+			if(f1.exists()) {
+				has_golden = true;
+			}
 			if(has_golden) {
 				BufferedReader r3 = new BufferedReader(new FileReader(dataset+"\\quali.csv"));
 				line = r3.readLine();
@@ -393,43 +382,6 @@ public class Preprocess {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-	}
-	
-	/* main function */
-	public static void main(String[] args) {
-		if(args.length!=5 && args.length!=6 && args.length!=11) {
-			System.out.println("Invalid parameter length!");
-			System.exit(0);
-		}
-		String dataset = args[0];
-		int run_num = Integer.parseInt(args[1]);
-		double mu = Double.parseDouble(args[2]);
-		double epsilon = Double.parseDouble(args[3]);
-		int lambda = Integer.parseInt(args[4]);
-		
-		Preprocess pre;
-		if(args.length==5) {
-			pre = new Preprocess(dataset, run_num, mu, epsilon, lambda);
-		}
-		else {
-			int golden_num = Integer.parseInt(args[5]);
-			if(args.length==6) {
-				pre = new Preprocess(dataset, run_num, mu, epsilon, lambda, golden_num);
-			}
-			else {
-				int N = Integer.parseInt(args[6]);
-				int M = Integer.parseInt(args[7]);
-				int L = Integer.parseInt(args[8]);
-				int K = Integer.parseInt(args[9]);
-				double theta = Double.parseDouble(args[10]);
-				pre = new Preprocess(dataset, run_num, mu, epsilon, lambda, golden_num, N, M, L, K, theta);
-			}
-		}
-		
-		if(pre!=null) {
-			pre.formalize();
-			System.out.println("The dataset " + dataset +" is ready for testing!");
 		}
 	}
 }
