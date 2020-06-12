@@ -1,3 +1,9 @@
+/** TDSSA.java is the main framework that coordinates the probabilistic task assignment and
+ *  extended truth discovery to deal with different worker activities for defending against 
+ *  strategic Sybil attack. The statistics about Accuracy, Cost, Completion and running time
+ *  would be saved in a "result.txt" file.
+ */
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;

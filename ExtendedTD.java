@@ -1,3 +1,8 @@
+/** ExtendedTD.java provides the component of extended truth discovery for TDSSA,
+ *  which iteratively infers the true label of tasks and the quality of workers
+ *  with the Sybil score and reliability score of workers taken into consideration.
+ */
+
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;

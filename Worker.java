@@ -1,3 +1,9 @@
+/** Worker.java provides the modeling of online workers. Each worker is associated with 
+ *  a Sybil score, a reliability score and an accuracy on golden tasks. The attacker id
+ *  indicates which Sybil attacker controls the worker. Independent workers will have a
+ *  -1 attacker id.
+ */
+
 import java.util.HashMap;
 import java.util.Map;
 

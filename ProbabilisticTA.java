@@ -1,3 +1,7 @@
+/** ProbabilisticTA.java provides the component of probabilistic task assignment for 
+ *  TDSSA, which finds a task to assign when a worker requests.
+ */
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;

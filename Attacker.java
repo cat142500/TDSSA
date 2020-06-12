@@ -1,3 +1,10 @@
+/** Attacker.java provides the modeling of strategic Sybil attacker. Each attacker is 
+ *  associated with a list of Sybil workers. For each task, the attacker will randomize
+ *  a label for Sybil workers to share. To evade Sybil detection, the attacker keeps
+ *  counting the observation of tasks so that a golden task could identified if the 
+ *  task has been assigned to more than K Sybil workers under his control.
+ */
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +57,6 @@ public class Attacker {
 			// label the task honestly if the task is observed for more than K times
 			if(count==K+1) {
 				Random rand = new Random();
-				// assume the attacker has 0.8 probability to provide the true label once a golden task is identified
 				if(rand.nextDouble()<=0.8) {
 					setTaskLabel(task, task.getTrueLabel());
 				}

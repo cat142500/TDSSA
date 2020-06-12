@@ -1,3 +1,8 @@
+/** Task.java provides the modeling of tasks. Each task is associated with an average 
+ *  reliability of workers on the task and a true label. A task is completed once the
+ *  aggregated label is determined.
+ */
+
 import java.util.ArrayList;
 
 public class Task {

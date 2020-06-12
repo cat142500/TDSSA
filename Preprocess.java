@@ -1,3 +1,11 @@
+/** Preprocess.java can be used to formalize a real dataset or generate a synthetic 
+ *  dataset. An "input.txt" file and a "golden.txt" file will be created to indicate 
+ *  the (task, worker, label) triples for normal and golden tasks, respectively. For 
+ *  each run, an "attacker.txt" file and an "order.txt" file will also be created to 
+ *  simulate different replacements of independent workers with Sybil workers and 
+ *  different order of worker requests, respectively.
+ */
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
