@@ -2,7 +2,9 @@
  *  associated with a list of Sybil workers. For each task, the attacker will randomize
  *  a label for Sybil workers to share. To evade Sybil detection, the attacker keeps
  *  counting the observation of tasks so that a golden task could identified if the 
- *  task has been assigned to more than K Sybil workers under his control.
+ *  task has been assigned to more than K Sybil workers under his control. Once a golden
+ *  task is identified, the attacker would honestly provide a new label for Sybil workers
+ *  to share, where the new label has theta probability to be the true label.
  */
 
 import java.util.ArrayList;
