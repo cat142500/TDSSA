@@ -41,7 +41,7 @@ The original DOG dataset (http://dbgroup.cs.tsinghua.edu.cn/ligl/crowddata/) con
 
 The DOG dataset does not have information about golden tasks, so we create 20 golden tasks and sample each worker's labels on golden tasks based on their accuracy. For example, if a worker correctly labeled 8 out of 10 tasks in the original dataset, the worker would have 0.8 probability to provide the true label on a golden task and 0.2 probability to provide a false one.
 
-Similarly, we generate workers' labels tasks for the SYN datasets according to the average worker accuracy (theta). The default number of golden tasks is also 20.
+Similarly, we generate workers' labels on tasks for the SYN datasets according to the average worker accuracy (theta). The data generation is done together with running TDSSA, described below. The default number of golden tasks is also 20.
 
 ## RUNNING TDSSA
 
